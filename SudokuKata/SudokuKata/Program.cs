@@ -9,19 +9,15 @@ namespace SudokuKata
     {
         public static string Play(out string finalBoard)
         {
-            #region Construct fully populated board
-            var board = CreateBoard();
-
-            // Construct board to be solved
             Random rng = new Random();
 
+            var board = CreateBoard();
             board = SolveBoard(board, rng, out Stack<int[]> stateStack);
 
             Console.WriteLine();
             Console.WriteLine("Final look of the solved board:");
             finalBoard = string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray());
             Console.WriteLine(finalBoard);
-            #endregion
 
             #region Generate inital board from the completely solved one
             // Board is solved at this point.
