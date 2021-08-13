@@ -22,46 +22,8 @@ namespace SudokuKata
             #region Generate inital board from the completely solved one
             // Board is solved at this point.
             // Now pick subset of digits as the starting position.
-            int remainingDigits = 30;
-            int maxRemovedPerBlock = 6;
-            int[,] removedPerBlock = new int[3, 3];
-            int[] positions = Enumerable.Range(0, 9 * 9).ToArray();
-            int[] state = stateStack.Peek();
-
-            int[] finalState = new int[state.Length];
-            Array.Copy(state, finalState, finalState.Length);
-
-            int removedPos = 0;
-            while (removedPos < 9 * 9 - remainingDigits)
-            {
-                int curRemainingDigits = positions.Length - removedPos;
-                int indexToPick = removedPos + rng.Next(curRemainingDigits);
-
-                int row = positions[indexToPick] / 9;
-                int col = positions[indexToPick] % 9;
-
-                int blockRowToRemove = row / 3;
-                int blockColToRemove = col / 3;
-
-                if (removedPerBlock[blockRowToRemove, blockColToRemove] >= maxRemovedPerBlock)
-                    continue;
-
-                removedPerBlock[blockRowToRemove, blockColToRemove] += 1;
-
-                int temp = positions[removedPos];
-                positions[removedPos] = positions[indexToPick];
-                positions[indexToPick] = temp;
-
-                int rowToWrite = row + row / 3 + 1;
-                int colToWrite = col + col / 3 + 1;
-
-                board[rowToWrite][colToWrite] = '.';
-
-                int stateIndex = 9 * row + col;
-                state[stateIndex] = 0;
-
-                removedPos += 1;
-            }
+            int[] state, finalState;
+            board = CreateInitialBoard(board, rng, stateStack, out state, out finalState);
 
             Console.WriteLine();
             Console.WriteLine("Starting look of the board to solve:");
@@ -819,6 +781,51 @@ namespace SudokuKata
             }
 
             return string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray());
+        }
+
+        private static char[][] CreateInitialBoard(char[][] board, Random rng, Stack<int[]> stateStack, out int[] state, out int[] finalState)
+        {
+            int remainingDigits = 30;
+            int maxRemovedPerBlock = 6;
+            int[,] removedPerBlock = new int[3, 3];
+            int[] positions = Enumerable.Range(0, 9 * 9).ToArray();
+            state = stateStack.Peek();
+            finalState = new int[state.Length];
+            Array.Copy(state, finalState, finalState.Length);
+
+            int removedPos = 0;
+            while (removedPos < 9 * 9 - remainingDigits)
+            {
+                int curRemainingDigits = positions.Length - removedPos;
+                int indexToPick = removedPos + rng.Next(curRemainingDigits);
+
+                int row = positions[indexToPick] / 9;
+                int col = positions[indexToPick] % 9;
+
+                int blockRowToRemove = row / 3;
+                int blockColToRemove = col / 3;
+
+                if (removedPerBlock[blockRowToRemove, blockColToRemove] >= maxRemovedPerBlock)
+                    continue;
+
+                removedPerBlock[blockRowToRemove, blockColToRemove] += 1;
+
+                int temp = positions[removedPos];
+                positions[removedPos] = positions[indexToPick];
+                positions[indexToPick] = temp;
+
+                int rowToWrite = row + row / 3 + 1;
+                int colToWrite = col + col / 3 + 1;
+
+                board[rowToWrite][colToWrite] = '.';
+
+                int stateIndex = 9 * row + col;
+                state[stateIndex] = 0;
+
+                removedPos += 1;
+            }
+
+            return board;
         }
 
         private static char[][] SolveBoard(char[][] board, Random rng, out Stack<int[]> stateStack)
