@@ -858,7 +858,7 @@ namespace SudokuKata
                 {
                     int[] currentState = new int[9 * 9];
 
-                    if (stateStack.Count > 0)
+                    if (stateStack.Any())
                     {
                         Array.Copy(stateStack.Peek(), currentState, currentState.Length);
                     }
