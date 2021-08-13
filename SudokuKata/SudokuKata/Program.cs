@@ -10,25 +10,7 @@ namespace SudokuKata
         public static string Play(out string finalBoard)
         {
             #region Construct fully populated board
-            // Prepare empty board
-            string line = "+---+---+---+";
-            string middle = "|...|...|...|";
-            char[][] board = new char[][]
-            {
-                line.ToCharArray(),
-                middle.ToCharArray(),
-                middle.ToCharArray(),
-                middle.ToCharArray(),
-                line.ToCharArray(),
-                middle.ToCharArray(),
-                middle.ToCharArray(),
-                middle.ToCharArray(),
-                line.ToCharArray(),
-                middle.ToCharArray(),
-                middle.ToCharArray(),
-                middle.ToCharArray(),
-                line.ToCharArray()
-            };
+            var board = CreateBoard();
 
             // Construct board to be solved
             Random rng = new Random();
@@ -599,7 +581,7 @@ namespace SudokuKata
                                                 group.Where(cell => state[cell.Index] == 0 && (candidateMasks[cell.Index] & mask) != 0).ToList(),
                                             CleanableCellsCount =
                                                 group.Count(
-                                                    cell => state[cell.Index] == 0 && 
+                                                    cell => state[cell.Index] == 0 &&
                                                         (candidateMasks[cell.Index] & mask) != 0 &&
                                                         (candidateMasks[cell.Index] & ~mask) != 0)
                                         }))
@@ -993,6 +975,29 @@ namespace SudokuKata
             }
 
             return string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray());
+        }
+
+        private static char[][] CreateBoard()
+        {
+            string line = "+---+---+---+";
+            string middle = "|...|...|...|";
+            char[][] board = new char[][]
+            {
+                line.ToCharArray(),
+                middle.ToCharArray(),
+                middle.ToCharArray(),
+                middle.ToCharArray(),
+                line.ToCharArray(),
+                middle.ToCharArray(),
+                middle.ToCharArray(),
+                middle.ToCharArray(),
+                line.ToCharArray(),
+                middle.ToCharArray(),
+                middle.ToCharArray(),
+                middle.ToCharArray(),
+                line.ToCharArray()
+            };
+            return board;
         }
 
         static void Main(string[] args)
