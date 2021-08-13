@@ -24,10 +24,7 @@ namespace SudokuKata
             // Now pick subset of digits as the starting position.
             int[] state, finalState;
             board = CreateInitialBoard(board, rng, stateStack, out state, out finalState);
-
-            Console.WriteLine();
-            Console.WriteLine("Starting look of the board to solve:");
-            Console.WriteLine(string.Join("\n", board.Select(s => new string(s)).ToArray()));
+            PrintBoard(board);
             #endregion
 
             #region Prepare lookup structures that will be used in further execution
@@ -781,6 +778,13 @@ namespace SudokuKata
             }
 
             return string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray());
+        }
+
+        private static void PrintBoard(char[][] board)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Starting look of the board to solve:");
+            Console.WriteLine(string.Join("\n", board.Select(s => new string(s)).ToArray()));
         }
 
         private static char[][] CreateInitialBoard(char[][] board, Random rng, Stack<int[]> stateStack, out int[] state, out int[] finalState)
