@@ -5,9 +5,9 @@ using System.Text;
 
 namespace SudokuKata
 {
-    class Program
+    public class Program
     {
-        static void Play()
+        public static string Play(out string finalBoard)
         {
             #region Construct fully populated board
             // Prepare empty board
@@ -189,7 +189,8 @@ namespace SudokuKata
 
             Console.WriteLine();
             Console.WriteLine("Final look of the solved board:");
-            Console.WriteLine(string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray()));
+            finalBoard = string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray());
+            Console.WriteLine(finalBoard);
             #endregion
 
             #region Generate inital board from the completely solved one
@@ -990,11 +991,13 @@ namespace SudokuKata
                     #endregion
                 }
             }
+
+            return string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray());
         }
 
         static void Main(string[] args)
         {
-            Play();
+            Play(out _);
 
             Console.WriteLine();
             Console.Write("Press ENTER to exit... ");
