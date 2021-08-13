@@ -11,12 +11,12 @@ namespace SudokuKata
         {
             Random rng = new Random();
 
-            var board = CreateBoard();
+            var board = new Board();
             board = SolveBoard(board, rng, out Stack<int[]> stateStack);
 
             Console.WriteLine();
             Console.WriteLine("Final look of the solved board:");
-            finalBoard = string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray());
+            finalBoard = board.ToString();
             Console.WriteLine(finalBoard);
 
             #region Generate inital board from the completely solved one
@@ -158,7 +158,7 @@ namespace SudokuKata
                         int colToWrite = col + col / 3 + 1;
 
                         state[singleCandidateIndex] = candidate + 1;
-                        board[rowToWrite][colToWrite] = (char)('1' + candidate);
+                        board.SetAt(rowToWrite, colToWrite, (char)('1' + candidate));
                         candidateMasks[singleCandidateIndex] = 0;
                         changeMade = true;
 
@@ -261,7 +261,7 @@ namespace SudokuKata
                             int stateIndex = 9 * row + col;
                             state[stateIndex] = digit;
                             candidateMasks[stateIndex] = 0;
-                            board[rowToWrite][colToWrite] = (char)('0' + digit);
+                            board.SetAt(rowToWrite, colToWrite, (char)('0' + digit));
 
                             changeMade = true;
 
@@ -676,7 +676,7 @@ namespace SudokuKata
                                 {
                                     usedDigits[digitToMove - 1] = false;
                                     currentState[currentStateIndex] = 0;
-                                    board[rowToWrite][colToWrite] = '.';
+                                    board.SetAt(rowToWrite, colToWrite, '.');
                                 }
 
                                 if (movedToDigit <= 9)
@@ -684,7 +684,7 @@ namespace SudokuKata
                                     lastDigitStack.Push(movedToDigit);
                                     usedDigits[movedToDigit - 1] = true;
                                     currentState[currentStateIndex] = movedToDigit;
-                                    board[rowToWrite][colToWrite] = (char)('0' + movedToDigit);
+                                    board.SetAt(rowToWrite, colToWrite, (char)('0' + movedToDigit));
 
                                     if (currentState.Any(digit => digit == 0))
                                         command = "expand";
@@ -750,9 +750,9 @@ namespace SudokuKata
                             int rowToWrite = tempRow + tempRow / 3 + 1;
                             int colToWrite = tempCol + tempCol / 3 + 1;
 
-                            board[rowToWrite][colToWrite] = '.';
+                            board.SetAt(rowToWrite, colToWrite, '.');
                             if (state[i] > 0)
-                                board[rowToWrite][colToWrite] = (char)('0' + state[i]);
+                                board.SetAt(rowToWrite, colToWrite, (char)('0' + state[i]));
                         }
 
                         Console.WriteLine($"Guessing that {digit1} and {digit2} are arbitrary in {description} (multiple solutions): Pick {finalState[index1]}->({row1 + 1}, {col1 + 1}), {finalState[index2]}->({row2 + 1}, {col2 + 1}).");
@@ -763,9 +763,9 @@ namespace SudokuKata
                 if (changeMade)
                 {
                     #region Print the board as it looks after one change was made to it
-                    Console.WriteLine(string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray()));
-                    string code =
-                        string.Join(string.Empty, board.Select(s => new string(s)).ToArray())
+                    Console.WriteLine(board);
+                    string code = board.ToString()
+                            .Replace(Environment.NewLine, string.Empty)
                             .Replace("-", string.Empty)
                             .Replace("+", string.Empty)
                             .Replace("|", string.Empty)
@@ -777,17 +777,17 @@ namespace SudokuKata
                 }
             }
 
-            return string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray());
+            return board.ToString();
         }
 
-        private static void PrintBoard(char[][] board)
+        private static void PrintBoard(Board board)
         {
             Console.WriteLine();
             Console.WriteLine("Starting look of the board to solve:");
-            Console.WriteLine(string.Join("\n", board.Select(s => new string(s)).ToArray()));
+            Console.WriteLine(board);
         }
 
-        private static char[][] CreateInitialBoard(char[][] board, Random rng, Stack<int[]> stateStack, out int[] state, out int[] finalState)
+        private static Board CreateInitialBoard(Board board, Random rng, Stack<int[]> stateStack, out int[] state, out int[] finalState)
         {
             int remainingDigits = 30;
             int maxRemovedPerBlock = 6;
@@ -821,7 +821,7 @@ namespace SudokuKata
                 int rowToWrite = row + row / 3 + 1;
                 int colToWrite = col + col / 3 + 1;
 
-                board[rowToWrite][colToWrite] = '.';
+                board.SetAt(rowToWrite, colToWrite, '.');
 
                 int stateIndex = 9 * row + col;
                 state[stateIndex] = 0;
@@ -832,7 +832,7 @@ namespace SudokuKata
             return board;
         }
 
-        private static char[][] SolveBoard(char[][] board, Random rng, out Stack<int[]> stateStack)
+        private static Board SolveBoard(Board board, Random rng, out Stack<int[]> stateStack)
         {
             // Top element is current state of the board
             stateStack = new Stack<int[]>();
@@ -964,7 +964,7 @@ namespace SudokuKata
                     {
                         usedDigits[digitToMove - 1] = false;
                         currentState[currentStateIndex] = 0;
-                        board[rowToWrite][colToWrite] = '.';
+                        board.SetAt(rowToWrite, colToWrite, '.');
                     }
 
                     if (movedToDigit <= 9)
@@ -972,7 +972,7 @@ namespace SudokuKata
                         lastDigitStack.Push(movedToDigit);
                         usedDigits[movedToDigit - 1] = true;
                         currentState[currentStateIndex] = movedToDigit;
-                        board[rowToWrite][colToWrite] = (char)('0' + movedToDigit);
+                        board.SetAt(rowToWrite, colToWrite, (char)('0' + movedToDigit));
 
                         // Next possible digit was found at current position
                         // Next step will be to expand the state
@@ -991,11 +991,30 @@ namespace SudokuKata
             return board;
         }
 
-        private static char[][] CreateBoard()
+        static void Main(string[] args)
+        {
+            Play(out _);
+
+            Console.WriteLine();
+            Console.Write("Press ENTER to exit... ");
+            Console.ReadLine();
+        }
+    }
+
+    public class Board
+    {
+        private char[][] board;
+
+        public Board()
+        {
+            board = CreateNewBoard();
+        }
+
+        private static char[][] CreateNewBoard()
         {
             string line = "+---+---+---+";
             string middle = "|...|...|...|";
-            char[][] board = new char[][]
+            var result = new char[][]
             {
                 line.ToCharArray(),
                 middle.ToCharArray(),
@@ -1011,16 +1030,17 @@ namespace SudokuKata
                 middle.ToCharArray(),
                 line.ToCharArray()
             };
-            return board;
+            return result;
         }
 
-        static void Main(string[] args)
+        public void SetAt(int row, int col, char value)
         {
-            Play(out _);
+            board[row][col] = value;
+        }
 
-            Console.WriteLine();
-            Console.Write("Press ENTER to exit... ");
-            Console.ReadLine();
+        public override string ToString()
+        {
+            return string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray());
         }
     }
 }
