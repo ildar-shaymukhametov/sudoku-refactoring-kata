@@ -84,10 +84,10 @@ namespace SudokuKata
 
         public Board()
         {
-            board = CreateNewBoard();
+            board = CreateEmptyBoard();
         }
 
-        private static char[][] CreateNewBoard()
+        private static char[][] CreateEmptyBoard()
         {
             string line = "+---+---+---+";
             string middle = "|...|...|...|";
