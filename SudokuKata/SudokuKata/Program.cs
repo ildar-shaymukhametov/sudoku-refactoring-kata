@@ -548,161 +548,11 @@ namespace SudokuKata
                             alternateState[index2] = digit2;
                         }
 
-                        // What follows below is a complete copy-paste of the solver which appears at the beginning of this method
-                        // However, the algorithm couldn't be applied directly and it had to be modified.
                         // Implementation below assumes that the board might not have a solution.
-                        stateStack = new Stack<int[]>();
-                        var rowIndexStack = new Stack<int>();
-                        var colIndexStack = new Stack<int>();
-                        var usedDigitsStack = new Stack<bool[]>();
-                        var lastDigitStack = new Stack<int>();
 
-                        var command = "expand";
-                        while (command != "complete" && command != "fail")
-                        {
-                            if (command == "expand")
-                            {
-                                int[] currentState = new int[9 * 9];
-
-                                if (stateStack.Any())
-                                {
-                                    Array.Copy(stateStack.Peek(), currentState, currentState.Length);
-                                }
-                                else
-                                {
-                                    Array.Copy(alternateState, currentState, currentState.Length);
-                                }
-
-                                int bestRow = -1;
-                                int bestCol = -1;
-                                bool[] bestUsedDigits = null;
-                                int bestCandidatesCount = -1;
-                                int bestRandomValue = -1;
-                                bool containsUnsolvableCells = false;
-
-                                for (int index = 0; index < currentState.Length; index++)
-                                    if (currentState[index] == 0)
-                                    {
-
-                                        int row = index / 9;
-                                        int col = index % 9;
-                                        int blockRow = row / 3;
-                                        int blockCol = col / 3;
-
-                                        bool[] isDigitUsed = new bool[9];
-
-                                        for (int i = 0; i < 9; i++)
-                                        {
-                                            int rowDigit = currentState[9 * i + col];
-                                            if (rowDigit > 0)
-                                                isDigitUsed[rowDigit - 1] = true;
-
-                                            int colDigit = currentState[9 * row + i];
-                                            if (colDigit > 0)
-                                                isDigitUsed[colDigit - 1] = true;
-
-                                            int blockDigit = currentState[(blockRow * 3 + i / 3) * 9 + (blockCol * 3 + i % 3)];
-                                            if (blockDigit > 0)
-                                                isDigitUsed[blockDigit - 1] = true;
-                                        } // for (i = 0..8)
-
-                                        int candidatesCount = isDigitUsed.Where(used => !used).Count();
-
-                                        if (candidatesCount == 0)
-                                        {
-                                            containsUnsolvableCells = true;
-                                            break;
-                                        }
-
-                                        int randomValue = rng.Next();
-
-                                        if (bestCandidatesCount < 0 ||
-                                            candidatesCount < bestCandidatesCount ||
-                                            (candidatesCount == bestCandidatesCount && randomValue < bestRandomValue))
-                                        {
-                                            bestRow = row;
-                                            bestCol = col;
-                                            bestUsedDigits = isDigitUsed;
-                                            bestCandidatesCount = candidatesCount;
-                                            bestRandomValue = randomValue;
-                                        }
-
-                                    } // for (index = 0..81)
-
-                                if (!containsUnsolvableCells)
-                                {
-                                    stateStack.Push(currentState);
-                                    rowIndexStack.Push(bestRow);
-                                    colIndexStack.Push(bestCol);
-                                    usedDigitsStack.Push(bestUsedDigits);
-                                    lastDigitStack.Push(0); // No digit was tried at this position
-                                }
-
-                                // Always try to move after expand
-                                command = "move";
-
-                            } // if (command == "expand")
-                            else if (command == "collapse")
-                            {
-                                stateStack.Pop();
-                                rowIndexStack.Pop();
-                                colIndexStack.Pop();
-                                usedDigitsStack.Pop();
-                                lastDigitStack.Pop();
-
-                                if (stateStack.Any())
-                                    command = "move"; // Always try to move after collapse
-                                else
-                                    command = "fail";
-                            }
-                            else if (command == "move")
-                            {
-
-                                int rowToMove = rowIndexStack.Peek();
-                                int colToMove = colIndexStack.Peek();
-                                int digitToMove = lastDigitStack.Pop();
-
-                                int rowToWrite = rowToMove + rowToMove / 3 + 1;
-                                int colToWrite = colToMove + colToMove / 3 + 1;
-
-                                bool[] usedDigits = usedDigitsStack.Peek();
-                                int[] currentState = stateStack.Peek();
-                                int currentStateIndex = 9 * rowToMove + colToMove;
-
-                                int movedToDigit = digitToMove + 1;
-                                while (movedToDigit <= 9 && usedDigits[movedToDigit - 1])
-                                    movedToDigit += 1;
-
-                                if (digitToMove > 0)
-                                {
-                                    usedDigits[digitToMove - 1] = false;
-                                    currentState[currentStateIndex] = 0;
-                                    board.SetAt(rowToWrite, colToWrite, '.');
-                                }
-
-                                if (movedToDigit <= 9)
-                                {
-                                    lastDigitStack.Push(movedToDigit);
-                                    usedDigits[movedToDigit - 1] = true;
-                                    currentState[currentStateIndex] = movedToDigit;
-                                    board.SetAt(rowToWrite, colToWrite, (char)('0' + movedToDigit));
-
-                                    if (currentState.Any(digit => digit == 0))
-                                        command = "expand";
-                                    else
-                                        command = "complete";
-                                }
-                                else
-                                {
-                                    // No viable candidate was found at current position - pop it in the next iteration
-                                    lastDigitStack.Push(0);
-                                    command = "collapse";
-                                }
-                            } // if (command == "move")
-
-                        } // while (command != "complete" && command != "fail")
-
-                        if (command == "complete")
+                        var solver2 = new Solver(board, rng, out Stack<int[]> stateStack2);
+                        var solved = solver2.Solve();
+                        if (solved)
                         {   // Board was solved successfully even with two digits swapped
                             stateIndex1.Add(index1);
                             stateIndex2.Add(index2);
@@ -891,6 +741,20 @@ namespace SudokuKata
         void ExecuteCommand(StateContext stateContext);
     }
 
+    public class FailState : IState
+    {
+        public void ExecuteCommand(StateContext stateContext)
+        {
+        }
+    }
+
+    public class CompleteState : IState
+    {
+        public void ExecuteCommand(StateContext stateContext)
+        {
+        }
+    }
+
     public class CollapseState : IState
     {
         private readonly Board board;
@@ -919,7 +783,14 @@ namespace SudokuKata
             usedDigitsStack.Pop();
             lastDigitStack.Pop();
 
-            stateContext.SetState(new MoveState(stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack, board, rng));
+            if (stateStack.Any())
+            {
+                stateContext.State = new MoveState(stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack, board, rng);
+            }
+            else
+            {
+                stateContext.State = new FailState();
+            }
         }
     }
 
@@ -974,13 +845,20 @@ namespace SudokuKata
                 currentState[currentStateIndex] = movedToDigit;
                 board.SetAt(rowToWrite, colToWrite, (char)('0' + movedToDigit));
 
-                stateContext.SetState(new ExpandState(board, rng, stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack));
+                if (currentState.Any(digit => digit == 0))
+                {
+                    stateContext.State = new ExpandState(board, rng, stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack);
+                }
+                else
+                {
+                    stateContext.State = new CompleteState();
+                }
             }
             else
             {
                 // No viable candidate was found at current position - pop it in the next iteration
                 lastDigitStack.Push(0);
-                stateContext.SetState(new CollapseState(board, rng, stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack));
+                stateContext.State = new CollapseState(board, rng, stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack);
             }
         }
     }
@@ -1081,27 +959,22 @@ namespace SudokuKata
             }
 
             // Always try to move after expand
-            stateContext.SetState(new MoveState(stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack, board, rng));
+            stateContext.State = new MoveState(stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack, board, rng);
         }
     }
 
     public class StateContext
     {
-        private IState state;
+        public IState State { get; set; }
 
         public StateContext(IState initialState)
         {
-            this.state = initialState;
+            State = initialState;
         }
 
         public void Execute()
         {
-            state.ExecuteCommand(this);
-        }
-
-        public void SetState(IState state)
-        {
-            this.state = state;
+            State.ExecuteCommand(this);
         }
     }
 
@@ -1110,33 +983,30 @@ namespace SudokuKata
         private readonly StateContext stateContext;
         private readonly Board board;
         private readonly Random rng;
-        private readonly Stack<int[]> stateStack;
-        private readonly Stack<int> rowIndexStack;
-        private readonly Stack<int> colIndexStack;
-        private readonly Stack<bool[]> usedDigitsStack;
-        private readonly Stack<int> lastDigitStack;
 
         public Solver(Board board, Random rng, out Stack<int[]> stateStack)
         {
             this.board = board;
             this.rng = rng;
-            this.stateStack = new Stack<int[]>();
-            stateStack = this.stateStack;
-            this.rowIndexStack = new Stack<int>();
-            this.colIndexStack = new Stack<int>();
-            this.usedDigitsStack = new Stack<bool[]>();
-            this.lastDigitStack = new Stack<int>();
-
-            var initialState = new ExpandState(board, rng, stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack);
+            stateStack = new Stack<int[]>();
+            var initialState = new ExpandState(board, rng, stateStack, new Stack<int>(), new Stack<int>(), new Stack<bool[]>(), new Stack<int>());
             this.stateContext = new StateContext(initialState);
         }
 
-        public void Solve()
+        public bool Solve()
         {
-            while (stateStack.Count <= 9 * 9)
+            while (stateContext.State is not CompleteState && stateContext.State is not FailState)
             {
                 stateContext.Execute();
             }
+
+            var result = false;
+            if (stateContext.State is CompleteState)
+            {
+                result = true;
+            }
+
+            return result;
         }
     }
 }
