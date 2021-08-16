@@ -11,11 +11,13 @@ namespace SudokuKata
         {
             var solver = new Solver();
             var result = solver.Solve();
-            finalBoard = result.FinalBoard.ToString();
-            if (!result.Solved)
+            if (result == null)
             {
+                finalBoard = null;
                 return null;
             }
+
+            finalBoard = result.FinalBoard.ToString();
 
             Console.WriteLine();
             Console.WriteLine("Final look of the solved board:");
@@ -373,7 +375,6 @@ namespace SudokuKata
         public Board? InitialBoard { get; set; }
         public Board? FinalBoard { get; set; }
         public SolutionStep[]? Steps { get; set; }
-        public bool Solved { get; set; }
     }
 
     public class Solver
@@ -387,26 +388,22 @@ namespace SudokuKata
             this.stateStack = new Stack<int[]>();
         }
 
-        public SolveResult Solve()
+        public SolveResult? Solve()
         {
-            Board? initialBoard = null;
-            SolutionStep[]? steps = null;
-            var solved = false;
-
             var finalBoard = Solve(new Board());
-            if (finalBoard != null)
+            if (finalBoard == null)
             {
-                initialBoard = Initialize(finalBoard, out int[] state, out int[] finalState);
-                steps = Steps(initialBoard, state, finalState);
-                solved = true;
+                return null;
             }
+
+            var initialBoard = Initialize(finalBoard, out int[] state, out int[] finalState);
+            var steps = Steps(initialBoard, state, finalState);
 
             return new SolveResult
             {
                 FinalBoard = finalBoard,
                 InitialBoard = initialBoard,
                 Steps = steps,
-                Solved = solved
             };
         }
 
