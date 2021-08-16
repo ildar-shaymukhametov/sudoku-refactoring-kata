@@ -467,10 +467,7 @@ namespace SudokuKata
                 var candidateMasks = CalculateCandidateMasks(state, allOnes);
 
                 // Build a collection (named cellGroups) which maps cell indices into distinct groups (rows/columns/blocks)
-                var rowsIndices = GetRowIndices(state);
-                var columnIndices = GetColumnsIndices(state);
-                var blockIndices = GetBlockIndices(state);
-                var cellGroups = rowsIndices.Concat(columnIndices).Concat(blockIndices).ToList();
+                var cellGroups = BuildCellGroups(state);
 
                 bool stepChangeMade = true;
                 while (stepChangeMade)
@@ -1067,6 +1064,15 @@ namespace SudokuKata
                     Column = index % 9
                 })
                 .GroupBy(tuple => tuple.Discriminator);
+            }
+
+            static List<IGrouping<int, IndexData>> BuildCellGroups(int[] state)
+            {
+                var rowsIndices = GetRowIndices(state);
+                var columnIndices = GetColumnsIndices(state);
+                var blockIndices = GetBlockIndices(state);
+                var result = rowsIndices.Concat(columnIndices).Concat(blockIndices).ToList();
+                return result;
             }
         }
     }
