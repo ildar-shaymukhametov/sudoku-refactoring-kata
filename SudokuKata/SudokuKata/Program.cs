@@ -390,7 +390,7 @@ namespace SudokuKata
             }
 
             var initialBoard = Initialize(finalBoard, out int[] state, out int[] finalState);
-            var steps = Steps(initialBoard, state, finalState);
+            var steps = CalculateSteps(initialBoard, state, finalState);
 
             return new SolveResult
             {
@@ -464,7 +464,7 @@ namespace SudokuKata
             return boardCopy;
         }
 
-        private SolutionStep[] Steps(Board board, int[] state, int[] finalState)
+        private SolutionStep[] CalculateSteps(Board board, int[] state, int[] finalState)
         {
             var result = new List<SolutionStep>();
 
