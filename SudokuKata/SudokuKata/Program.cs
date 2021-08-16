@@ -21,10 +21,7 @@ namespace SudokuKata
 
             PrintBoard("Final look of the solved board:", result.FinalBoard);
             PrintBoard("Starting look of the board to solve:", result.InitialBoard);
-
-            Console.WriteLine();
-            Console.WriteLine(new string('=', 80));
-            Console.WriteLine();
+            PrintSeparator();
 
             #region Print the board as it looks after one change was made to it
             foreach (var item in result.Steps)
@@ -48,6 +45,13 @@ namespace SudokuKata
             #endregion
 
             return result.FinalBoard.ToString();
+        }
+
+        private static void PrintSeparator()
+        {
+            Console.WriteLine();
+            Console.WriteLine(new string('=', 80));
+            Console.WriteLine();
         }
 
         private static void PrintBoard(string text, Board board)
