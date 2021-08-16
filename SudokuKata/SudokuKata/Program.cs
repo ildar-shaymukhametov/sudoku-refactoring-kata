@@ -147,17 +147,17 @@ namespace SudokuKata
         }
     }
 
-    public class CollapseState : IState
+    public abstract class State : IState
     {
-        private readonly Board board;
-        private readonly Random rng;
-        private readonly Stack<int[]> stateStack;
-        private readonly Stack<int> rowIndexStack;
-        private readonly Stack<int> colIndexStack;
-        private readonly Stack<bool[]> usedDigitsStack;
-        private readonly Stack<int> lastDigitStack;
+        protected readonly Board board;
+        protected readonly Random rng;
+        protected readonly Stack<int[]> stateStack;
+        protected readonly Stack<int> rowIndexStack;
+        protected readonly Stack<int> colIndexStack;
+        protected readonly Stack<bool[]> usedDigitsStack;
+        protected readonly Stack<int> lastDigitStack;
 
-        public CollapseState(Board board, Random rng, Stack<int[]> stateStack, Stack<int> rowIndexStack, Stack<int> colIndexStack, Stack<bool[]> usedDigitsStack, Stack<int> lastDigitStack)
+        public State(Board board, Random rng, Stack<int[]> stateStack, Stack<int> rowIndexStack, Stack<int> colIndexStack, Stack<bool[]> usedDigitsStack, Stack<int> lastDigitStack)
         {
             this.board = board;
             this.rng = rng;
@@ -167,7 +167,17 @@ namespace SudokuKata
             this.usedDigitsStack = usedDigitsStack;
             this.lastDigitStack = lastDigitStack;
         }
-        public void Execute(StateContext stateContext)
+
+        public abstract void Execute(StateContext stateContext);
+    }
+
+    public class CollapseState : State
+    {
+        public CollapseState(Board board, Random rng, Stack<int[]> stateStack, Stack<int> rowIndexStack, Stack<int> colIndexStack, Stack<bool[]> usedDigitsStack, Stack<int> lastDigitStack) : base(board, rng, stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack)
+        {
+        }
+
+        public override void Execute(StateContext stateContext)
         {
             stateStack.Pop();
             rowIndexStack.Pop();
@@ -177,7 +187,7 @@ namespace SudokuKata
 
             if (stateStack.Any())
             {
-                stateContext.State = new MoveState(stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack, board, rng);
+                stateContext.State = new MoveState(board, rng, stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack);
             }
             else
             {
@@ -186,27 +196,13 @@ namespace SudokuKata
         }
     }
 
-    public class MoveState : IState
+    public class MoveState : State
     {
-        private readonly Board board;
-        private readonly Random rng;
-        private readonly Stack<int[]> stateStack;
-        private readonly Stack<int> rowIndexStack;
-        private readonly Stack<int> colIndexStack;
-        private readonly Stack<bool[]> usedDigitsStack;
-        private readonly Stack<int> lastDigitStack;
-
-        public MoveState(Stack<int[]> stateStack, Stack<int> rowIndexStack, Stack<int> colIndexStack, Stack<bool[]> usedDigitsStack, Stack<int> lastDigitStack, Board board, Random rng)
+        public MoveState(Board board, Random rng, Stack<int[]> stateStack, Stack<int> rowIndexStack, Stack<int> colIndexStack, Stack<bool[]> usedDigitsStack, Stack<int> lastDigitStack) : base(board, rng, stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack)
         {
-            this.stateStack = stateStack;
-            this.rowIndexStack = rowIndexStack;
-            this.colIndexStack = colIndexStack;
-            this.usedDigitsStack = usedDigitsStack;
-            this.lastDigitStack = lastDigitStack;
-            this.board = board;
-            this.rng = rng;
         }
-        public void Execute(StateContext stateContext)
+
+        public override void Execute(StateContext stateContext)
         {
             int rowToMove = rowIndexStack.Peek();
             int colToMove = colIndexStack.Peek();
@@ -255,28 +251,13 @@ namespace SudokuKata
         }
     }
 
-    public class ExpandState : IState
+    public class ExpandState : State
     {
-        private readonly Board board;
-        private readonly Random rng;
-        private readonly Stack<int[]> stateStack;
-        private readonly Stack<int> rowIndexStack;
-        private readonly Stack<int> colIndexStack;
-        private readonly Stack<bool[]> usedDigitsStack;
-        private readonly Stack<int> lastDigitStack;
-
-        public ExpandState(Board board, Random rng, Stack<int[]> stateStack, Stack<int> rowIndexStack, Stack<int> colIndexStack, Stack<bool[]> usedDigitsStack, Stack<int> lastDigitStack)
+        public ExpandState(Board board, Random rng, Stack<int[]> stateStack, Stack<int> rowIndexStack, Stack<int> colIndexStack, Stack<bool[]> usedDigitsStack, Stack<int> lastDigitStack) : base(board, rng, stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack)
         {
-            this.board = board;
-            this.rng = rng;
-            this.stateStack = stateStack;
-            this.rowIndexStack = rowIndexStack;
-            this.colIndexStack = colIndexStack;
-            this.usedDigitsStack = usedDigitsStack;
-            this.lastDigitStack = lastDigitStack;
         }
 
-        public void Execute(StateContext stateContext)
+        public override void Execute(StateContext stateContext)
         {
             int[] currentState = new int[9 * 9];
 
@@ -351,7 +332,7 @@ namespace SudokuKata
             }
 
             // Always try to move after expand
-            stateContext.State = new MoveState(stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack, board, rng);
+            stateContext.State = new MoveState(board, rng, stateStack, rowIndexStack, colIndexStack, usedDigitsStack, lastDigitStack);
         }
     }
 
