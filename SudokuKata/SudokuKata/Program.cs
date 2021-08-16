@@ -11,22 +11,21 @@ namespace SudokuKata
         {
             Random rng = new Random();
 
-            var board = new Board();
-            var solver = new Solver(board, rng, out Stack<int[]> stateStack);
-            solver.Solve();
+            var solver = new Solver(rng);
+            var result = solver.Solve();
+            var board = result.InitialBoard;
 
             Console.WriteLine();
             Console.WriteLine("Final look of the solved board:");
-            finalBoard = board.ToString();
+            finalBoard = result.FinalBoard.ToString();
             Console.WriteLine(finalBoard);
 
-            #region Generate inital board from the completely solved one
             // Board is solved at this point.
             // Now pick subset of digits as the starting position.
-            int[] state, finalState;
-            board = CreateInitialBoard(board, rng, stateStack, out state, out finalState);
-            PrintBoard(board);
-            #endregion
+            PrintBoard(result.InitialBoard);
+
+            var state = result.InitialState;
+            var finalState = result.FinalState;
 
             #region Prepare lookup structures that will be used in further execution
             Console.WriteLine();
@@ -550,9 +549,9 @@ namespace SudokuKata
 
                         // Implementation below assumes that the board might not have a solution.
 
-                        var solver2 = new Solver(board, rng, out Stack<int[]> stateStack2);
-                        var solved = solver2.Solve();
-                        if (solved)
+                        var solver2 = new Solver(rng);
+                        var result2 = solver2.Solve();
+                        if (result2.IsSolved)
                         {   // Board was solved successfully even with two digits swapped
                             stateIndex1.Add(index1);
                             stateIndex2.Add(index2);
@@ -638,51 +637,6 @@ namespace SudokuKata
             Console.WriteLine(board);
         }
 
-        private static Board CreateInitialBoard(Board board, Random rng, Stack<int[]> stateStack, out int[] state, out int[] finalState)
-        {
-            int remainingDigits = 30;
-            int maxRemovedPerBlock = 6;
-            int[,] removedPerBlock = new int[3, 3];
-            int[] positions = Enumerable.Range(0, 9 * 9).ToArray();
-            state = stateStack.Peek();
-            finalState = new int[state.Length];
-            Array.Copy(state, finalState, finalState.Length);
-
-            int removedPos = 0;
-            while (removedPos < 9 * 9 - remainingDigits)
-            {
-                int curRemainingDigits = positions.Length - removedPos;
-                int indexToPick = removedPos + rng.Next(curRemainingDigits);
-
-                int row = positions[indexToPick] / 9;
-                int col = positions[indexToPick] % 9;
-
-                int blockRowToRemove = row / 3;
-                int blockColToRemove = col / 3;
-
-                if (removedPerBlock[blockRowToRemove, blockColToRemove] >= maxRemovedPerBlock)
-                    continue;
-
-                removedPerBlock[blockRowToRemove, blockColToRemove] += 1;
-
-                int temp = positions[removedPos];
-                positions[removedPos] = positions[indexToPick];
-                positions[indexToPick] = temp;
-
-                int rowToWrite = row + row / 3 + 1;
-                int colToWrite = col + col / 3 + 1;
-
-                board.SetAt(rowToWrite, colToWrite, '.');
-
-                int stateIndex = 9 * row + col;
-                state[stateIndex] = 0;
-
-                removedPos += 1;
-            }
-
-            return board;
-        }
-
         static void Main(string[] args)
         {
             Play(out _);
@@ -733,6 +687,13 @@ namespace SudokuKata
         public override string ToString()
         {
             return string.Join(Environment.NewLine, board.Select(s => new string(s)).ToArray());
+        }
+
+        public Board Clone()
+        {
+            var result = new Board();
+            result.board = board.Select(x => x.ToArray()).ToArray();
+            return result;
         }
     }
 
@@ -978,35 +939,109 @@ namespace SudokuKata
         }
     }
 
+    public class SolveResult
+    {
+        public bool IsSolved { get; set; }
+        public Board? InitialBoard { get; set; }
+        public Board? FinalBoard { get; set; }
+        public int[]? InitialState { get; internal set; }
+        public int[]? FinalState { get; internal set; }
+    }
+
     public class Solver
     {
         private readonly StateContext stateContext;
         private readonly Board board;
         private readonly Random rng;
+        private readonly Stack<int[]> stateStack;
 
-        public Solver(Board board, Random rng, out Stack<int[]> stateStack)
+        public Solver(Random rng)
         {
-            this.board = board;
+            this.board = new Board();
             this.rng = rng;
-            stateStack = new Stack<int[]>();
+            this.stateStack = new Stack<int[]>();
             var initialState = new ExpandState(board, rng, stateStack, new Stack<int>(), new Stack<int>(), new Stack<bool[]>(), new Stack<int>());
             this.stateContext = new StateContext(initialState);
         }
 
-        public bool Solve()
+        public SolveResult Solve()
         {
             while (stateContext.State is not CompleteState && stateContext.State is not FailState)
             {
                 stateContext.Execute();
             }
 
-            var result = false;
+            var isSolved = false;
             if (stateContext.State is CompleteState)
             {
-                result = true;
+                isSolved = true;
             }
 
-            return result;
+            Board? initialBoard = null;
+            Board? finalBoard = null;
+            int[]? initialState = null;
+            int[]? finalState = null;
+
+            if (isSolved)
+            {
+                finalBoard = board;
+                initialBoard = PrepareBoard(out initialState, out finalState);
+            }
+
+            return new SolveResult
+            {
+                IsSolved = isSolved,
+                FinalBoard = finalBoard,
+                InitialBoard = initialBoard,
+                InitialState = initialState,
+                FinalState = finalState
+            };
+        }
+
+        private Board PrepareBoard(out int[] state, out int[] finalState)
+        {
+            int remainingDigits = 30;
+            int maxRemovedPerBlock = 6;
+            int[,] removedPerBlock = new int[3, 3];
+            int[] positions = Enumerable.Range(0, 9 * 9).ToArray();
+            state = stateStack.Peek();
+            finalState = new int[state.Length];
+            Array.Copy(state, finalState, finalState.Length);
+            var boardCopy = board.Clone();
+
+            int removedPos = 0;
+            while (removedPos < 9 * 9 - remainingDigits)
+            {
+                int curRemainingDigits = positions.Length - removedPos;
+                int indexToPick = removedPos + rng.Next(curRemainingDigits);
+
+                int row = positions[indexToPick] / 9;
+                int col = positions[indexToPick] % 9;
+
+                int blockRowToRemove = row / 3;
+                int blockColToRemove = col / 3;
+
+                if (removedPerBlock[blockRowToRemove, blockColToRemove] >= maxRemovedPerBlock)
+                    continue;
+
+                removedPerBlock[blockRowToRemove, blockColToRemove] += 1;
+
+                int temp = positions[removedPos];
+                positions[removedPos] = positions[indexToPick];
+                positions[indexToPick] = temp;
+
+                int rowToWrite = row + row / 3 + 1;
+                int colToWrite = col + col / 3 + 1;
+
+                boardCopy.SetAt(rowToWrite, colToWrite, '.');
+
+                int stateIndex = 9 * row + col;
+                state[stateIndex] = 0;
+
+                removedPos += 1;
+            }
+
+            return boardCopy;
         }
     }
 }
