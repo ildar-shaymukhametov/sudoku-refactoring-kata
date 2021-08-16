@@ -464,7 +464,7 @@ namespace SudokuKata
             return boardCopy;
         }
 
-        public SolutionStep[] Steps(Board board, int[] state, int[] finalState)
+        private SolutionStep[] Steps(Board board, int[] state, int[] finalState)
         {
             var result = new List<SolutionStep>();
 
