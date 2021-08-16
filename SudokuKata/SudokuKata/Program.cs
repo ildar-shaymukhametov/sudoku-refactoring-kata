@@ -420,13 +420,7 @@ namespace SudokuKata
                 stateContext.Execute();
             }
 
-            var solved = false;
             if (stateContext.State is CompleteState)
-            {
-                solved = true;
-            }
-
-            if (solved)
             {
                 return board;
             }
