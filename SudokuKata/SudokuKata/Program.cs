@@ -19,13 +19,8 @@ namespace SudokuKata
 
             finalBoard = result.FinalBoard.ToString();
 
-            Console.WriteLine();
-            Console.WriteLine("Final look of the solved board:");
-            Console.WriteLine(result.FinalBoard);
-
-            Console.WriteLine();
-            Console.WriteLine("Starting look of the board to solve:");
-            Console.WriteLine(result.InitialBoard);
+            PrintBoard("Final look of the solved board:", result.FinalBoard);
+            PrintBoard("Starting look of the board to solve:", result.InitialBoard);
 
             Console.WriteLine();
             Console.WriteLine(new string('=', 80));
@@ -53,6 +48,13 @@ namespace SudokuKata
             #endregion
 
             return result.FinalBoard.ToString();
+        }
+
+        private static void PrintBoard(string text, Board board)
+        {
+            Console.WriteLine();
+            Console.WriteLine(text);
+            Console.WriteLine(board);
         }
 
         static void Main(string[] args)
