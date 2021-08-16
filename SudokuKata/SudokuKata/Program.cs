@@ -466,42 +466,11 @@ namespace SudokuKata
                 var stepDescriptions = new List<string>();
                 var candidateMasks = CalculateCandidateMasks(state, allOnes);
 
-                #region Build a collection (named cellGroups) which maps cell indices into distinct groups (rows/columns/blocks)
-                var rowsIndices = state
-                    .Select((value, index) => new
-                    {
-                        Discriminator = index / 9,
-                        Description = $"row #{index / 9 + 1}",
-                        Index = index,
-                        Row = index / 9,
-                        Column = index % 9
-                    })
-                    .GroupBy(tuple => tuple.Discriminator);
-
-                var columnIndices = state
-                    .Select((value, index) => new
-                    {
-                        Discriminator = 9 + index % 9,
-                        Description = $"column #{index % 9 + 1}",
-                        Index = index,
-                        Row = index / 9,
-                        Column = index % 9
-                    })
-                    .GroupBy(tuple => tuple.Discriminator);
-
-                var blockIndices = state
-                    .Select((value, index) => new
-                    {
-                        Discriminator = 18 + 3 * (index / 9 / 3) + index % 9 / 3,
-                        Description = $"block ({index / 9 / 3 + 1}, {index % 9 / 3 + 1})",
-                        Index = index,
-                        Row = index / 9,
-                        Column = index % 9
-                    })
-                    .GroupBy(tuple => tuple.Discriminator);
-
+                // Build a collection (named cellGroups) which maps cell indices into distinct groups (rows/columns/blocks)
+                var rowsIndices = GetRowIndices(state);
+                var columnIndices = GetColumnsIndices(state);
+                var blockIndices = GetBlockIndices(state);
                 var cellGroups = rowsIndices.Concat(columnIndices).Concat(blockIndices).ToList();
-                #endregion
 
                 bool stepChangeMade = true;
                 while (stepChangeMade)
@@ -1060,6 +1029,54 @@ namespace SudokuKata
 
                 return result;
             }
+
+            static IEnumerable<IGrouping<int, IndexData>> GetRowIndices(int[] state)
+            {
+                return state.Select((value, index) => new IndexData
+                {
+                    Discriminator = index / 9,
+                    Description = $"row #{index / 9 + 1}",
+                    Index = index,
+                    Row = index / 9,
+                    Column = index % 9
+                })
+                .GroupBy(tuple => tuple.Discriminator);
+            }
+
+            static IEnumerable<IGrouping<int, IndexData>> GetColumnsIndices(int[] state)
+            {
+                return state.Select((value, index) => new IndexData
+                {
+                    Discriminator = 9 + index % 9,
+                    Description = $"column #{index % 9 + 1}",
+                    Index = index,
+                    Row = index / 9,
+                    Column = index % 9
+                })
+                .GroupBy(tuple => tuple.Discriminator);
+            }
+
+            static IEnumerable<IGrouping<int, IndexData>> GetBlockIndices(int[] state)
+            {
+                return state.Select((value, index) => new IndexData
+                {
+                    Discriminator = 18 + 3 * (index / 9 / 3) + index % 9 / 3,
+                    Description = $"block ({index / 9 / 3 + 1}, {index % 9 / 3 + 1})",
+                    Index = index,
+                    Row = index / 9,
+                    Column = index % 9
+                })
+                .GroupBy(tuple => tuple.Discriminator);
+            }
         }
+    }
+
+    class IndexData
+    {
+        public int Discriminator { get; set; }
+        public string Description { get; set; }
+        public int Index { get; set; }
+        public int Row { get; set; }
+        public int Column { get; set; }
     }
 }
