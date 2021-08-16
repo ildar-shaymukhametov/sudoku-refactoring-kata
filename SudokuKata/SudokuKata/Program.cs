@@ -738,19 +738,19 @@ namespace SudokuKata
 
     public interface IState
     {
-        void ExecuteCommand(StateContext stateContext);
+        void Execute(StateContext stateContext);
     }
 
     public class FailState : IState
     {
-        public void ExecuteCommand(StateContext stateContext)
+        public void Execute(StateContext stateContext)
         {
         }
     }
 
     public class CompleteState : IState
     {
-        public void ExecuteCommand(StateContext stateContext)
+        public void Execute(StateContext stateContext)
         {
         }
     }
@@ -775,7 +775,7 @@ namespace SudokuKata
             this.usedDigitsStack = usedDigitsStack;
             this.lastDigitStack = lastDigitStack;
         }
-        public void ExecuteCommand(StateContext stateContext)
+        public void Execute(StateContext stateContext)
         {
             stateStack.Pop();
             rowIndexStack.Pop();
@@ -814,7 +814,7 @@ namespace SudokuKata
             this.board = board;
             this.rng = rng;
         }
-        public void ExecuteCommand(StateContext stateContext)
+        public void Execute(StateContext stateContext)
         {
             int rowToMove = rowIndexStack.Peek();
             int colToMove = colIndexStack.Peek();
@@ -884,7 +884,7 @@ namespace SudokuKata
             this.lastDigitStack = lastDigitStack;
         }
 
-        public void ExecuteCommand(StateContext stateContext)
+        public void Execute(StateContext stateContext)
         {
             int[] currentState = new int[9 * 9];
 
@@ -974,7 +974,7 @@ namespace SudokuKata
 
         public void Execute()
         {
-            State.ExecuteCommand(this);
+            State.Execute(this);
         }
     }
 
