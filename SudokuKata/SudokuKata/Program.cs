@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -492,17 +492,11 @@ namespace SudokuKata
                 var blockIndices = state
                     .Select((value, index) => new
                     {
+                        Discriminator = 18 + 3 * (index / 9 / 3) + index % 9 / 3,
+                        Description = $"block ({index / 9 / 3 + 1}, {index % 9 / 3 + 1})",
+                        Index = index,
                         Row = index / 9,
-                        Column = index % 9,
-                        Index = index
-                    })
-                    .Select(tuple => new
-                    {
-                        Discriminator = 18 + 3 * (tuple.Row / 3) + tuple.Column / 3,
-                        Description = $"block ({tuple.Row / 3 + 1}, {tuple.Column / 3 + 1})",
-                        Index = tuple.Index,
-                        Row = tuple.Row,
-                        Column = tuple.Column
+                        Column = index % 9
                     })
                     .GroupBy(tuple => tuple.Discriminator);
 
