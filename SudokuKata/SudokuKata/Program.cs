@@ -21,11 +21,11 @@ namespace SudokuKata
 
             Console.WriteLine();
             Console.WriteLine("Final look of the solved board:");
-            Console.WriteLine(finalBoard);
+            Console.WriteLine(result.FinalBoard);
 
-            // Board is solved at this point.
-            // Now pick subset of digits as the starting position.
-            PrintBoard(result.InitialBoard);
+            Console.WriteLine();
+            Console.WriteLine("Starting look of the board to solve:");
+            Console.WriteLine(result.InitialBoard);
 
             Console.WriteLine();
             Console.WriteLine(new string('=', 80));
@@ -53,13 +53,6 @@ namespace SudokuKata
             #endregion
 
             return result.FinalBoard.ToString();
-        }
-
-        private static void PrintBoard(Board board)
-        {
-            Console.WriteLine();
-            Console.WriteLine("Starting look of the board to solve:");
-            Console.WriteLine(board);
         }
 
         static void Main(string[] args)
