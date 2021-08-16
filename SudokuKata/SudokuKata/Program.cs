@@ -464,36 +464,7 @@ namespace SudokuKata
             {
                 changeMade = false;
                 var stepDescriptions = new List<string>();
-
-                #region Calculate candidates for current state of the board
-                int[] candidateMasks = new int[state.Length];
-
-                for (int i = 0; i < state.Length; i++)
-                    if (state[i] == 0)
-                    {
-
-                        int row = i / 9;
-                        int col = i % 9;
-                        int blockRow = row / 3;
-                        int blockCol = col / 3;
-
-                        int colidingNumbers = 0;
-                        for (int j = 0; j < 9; j++)
-                        {
-                            int rowSiblingIndex = 9 * row + j;
-                            int colSiblingIndex = 9 * j + col;
-                            int blockSiblingIndex = 9 * (blockRow * 3 + j / 3) + blockCol * 3 + j % 3;
-
-                            int rowSiblingMask = 1 << (state[rowSiblingIndex] - 1);
-                            int colSiblingMask = 1 << (state[colSiblingIndex] - 1);
-                            int blockSiblingMask = 1 << (state[blockSiblingIndex] - 1);
-
-                            colidingNumbers = colidingNumbers | rowSiblingMask | colSiblingMask | blockSiblingMask;
-                        }
-
-                        candidateMasks[i] = allOnes & ~colidingNumbers;
-                    }
-                #endregion
+                var candidateMasks = CalculateCandidateMasks(state, allOnes);
 
                 #region Build a collection (named cellGroups) which maps cell indices into distinct groups (rows/columns/blocks)
                 var rowsIndices = state
@@ -1051,6 +1022,39 @@ namespace SudokuKata
                 var result = new Dictionary<int, int>();
                 for (int i = 0; i < 9; i++)
                     result[1 << i] = i;
+                return result;
+            }
+
+            // Calculate candidates for current state of the board
+            static int[] CalculateCandidateMasks(int[] state, int allOnes)
+            {
+                int[] result = new int[state.Length];
+
+                for (int i = 0; i < state.Length; i++)
+                    if (state[i] == 0)
+                    {
+                        int row = i / 9;
+                        int col = i % 9;
+                        int blockRow = row / 3;
+                        int blockCol = col / 3;
+
+                        int colidingNumbers = 0;
+                        for (int j = 0; j < 9; j++)
+                        {
+                            int rowSiblingIndex = 9 * row + j;
+                            int colSiblingIndex = 9 * j + col;
+                            int blockSiblingIndex = 9 * (blockRow * 3 + j / 3) + blockCol * 3 + j % 3;
+
+                            int rowSiblingMask = 1 << (state[rowSiblingIndex] - 1);
+                            int colSiblingMask = 1 << (state[colSiblingIndex] - 1);
+                            int blockSiblingMask = 1 << (state[blockSiblingIndex] - 1);
+
+                            colidingNumbers = colidingNumbers | rowSiblingMask | colSiblingMask | blockSiblingMask;
+                        }
+
+                        result[i] = allOnes & ~colidingNumbers;
+                    }
+
                 return result;
             }
         }
