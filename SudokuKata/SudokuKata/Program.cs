@@ -9,9 +9,7 @@ namespace SudokuKata
     {
         public static string Play(out string finalBoard)
         {
-            Random rng = new Random();
-
-            var solver = new Solver(rng);
+            var solver = new Solver();
             var result = solver.Solve();
 
             Console.WriteLine();
@@ -378,9 +376,9 @@ namespace SudokuKata
         private readonly Random rng;
         private readonly Stack<int[]> stateStack;
 
-        public Solver(Random rng)
+        public Solver()
         {
-            this.rng = rng;
+            this.rng = new Random();
             this.stateStack = new Stack<int[]>();
         }
 
@@ -985,7 +983,7 @@ namespace SudokuKata
 
                         // Implementation below assumes that the board might not have a solution.
 
-                        var result2 = new Solver(rng).TrySolve(board, out _);
+                        var result2 = new Solver().TrySolve(board, out _);
                         if (result2)
                         {   // Board was solved successfully even with two digits swapped
                             stateIndex1.Add(index1);
