@@ -384,9 +384,15 @@ namespace SudokuKata
 
         public SolveResult Solve()
         {
-            TrySolve(new Board(), out Board finalBoard);
-            Board initialBoard = Initialize(finalBoard, out int[] state, out int[] finalState);
-            SolutionStep[] steps = Steps(initialBoard, state, finalState);
+            Board? initialBoard = null;
+            SolutionStep[]? steps = null;
+
+            var finalBoard = Solve(new Board());
+            if (finalBoard != null)
+            {
+                initialBoard = Initialize(finalBoard, out int[] state, out int[] finalState);
+                steps = Steps(initialBoard, state, finalState);
+            }
 
             return new SolveResult
             {
@@ -396,7 +402,7 @@ namespace SudokuKata
             };
         }
 
-        private bool TrySolve(Board board, out Board solvedBoard)
+        private Board? Solve(Board board)
         {
             var initialState = new ExpandState(board, rng, stateStack, new Stack<int>(), new Stack<int>(), new Stack<bool[]>(), new Stack<int>());
             var stateContext = new StateContext(initialState);
@@ -412,8 +418,12 @@ namespace SudokuKata
                 solved = true;
             }
 
-            solvedBoard = board;
-            return solved;
+            if (solved)
+            {
+                return board;
+            }
+
+            return null;
         }
 
         private Board Initialize(Board board, out int[] state, out int[] finalState)
@@ -983,8 +993,8 @@ namespace SudokuKata
 
                         // Implementation below assumes that the board might not have a solution.
 
-                        var result2 = new Solver().TrySolve(board, out _);
-                        if (result2)
+                        var solvedBoard = new Solver().Solve(board);
+                        if (solvedBoard != null)
                         {   // Board was solved successfully even with two digits swapped
                             stateIndex1.Add(index1);
                             stateIndex2.Add(index2);
