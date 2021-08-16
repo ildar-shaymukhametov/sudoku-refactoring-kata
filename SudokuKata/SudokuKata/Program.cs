@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +23,7 @@ namespace SudokuKata
             PrintSeparator();
             PrintSteps(result.Steps);
 
-            return result.FinalBoard.ToString();
+            return result.Steps.Last().Board.ToString();
         }
 
         private static void PrintSteps(SolutionStep[] steps)
