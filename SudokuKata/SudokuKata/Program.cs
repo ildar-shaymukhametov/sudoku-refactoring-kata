@@ -361,23 +361,24 @@ namespace SudokuKata
     public class Solver
     {
         private readonly Random rng;
-        private readonly Stack<int[]> stateStack;
 
         public Solver()
         {
             this.rng = new Random();
-            this.stateStack = new Stack<int[]>();
         }
 
         public SolveResult? Solve(Board board)
         {
-            var finalBoard = SolveBoard(board.Clone());
+            var stateStack = new Stack<int[]>();
+            var finalBoard = SolveBoard(board.Clone(), stateStack);
             if (finalBoard == null)
             {
                 return null;
             }
 
-            var initialBoard = Initialize(finalBoard, out int[] state, out int[] finalState);
+            var state = stateStack.Peek();
+            var finalState = state.ToArray();
+            var initialBoard = Initialize(finalBoard, state);
             var steps = CalculateSteps(initialBoard, state, finalState);
 
             return new SolveResult
@@ -388,7 +389,7 @@ namespace SudokuKata
             };
         }
 
-        private Board? SolveBoard(Board board)
+        private Board? SolveBoard(Board board, Stack<int[]> stateStack)
         {
             var initialState = new ExpandState(board, rng, stateStack, new Stack<int>(), new Stack<int>(), new Stack<bool[]>(), new Stack<int>());
             var stateContext = new StateContext(initialState);
@@ -406,15 +407,12 @@ namespace SudokuKata
             return null;
         }
 
-        private Board Initialize(Board board, out int[] state, out int[] finalState)
+        private Board Initialize(Board board, int[] state)
         {
             int remainingDigits = 30;
             int maxRemovedPerBlock = 6;
             int[,] removedPerBlock = new int[3, 3];
             int[] positions = Enumerable.Range(0, 9 * 9).ToArray();
-            state = stateStack.Peek();
-            finalState = new int[state.Length];
-            Array.Copy(state, finalState, finalState.Length);
             var boardCopy = board.Clone();
 
             int removedPos = 0;
@@ -973,7 +971,7 @@ namespace SudokuKata
 
                         // Implementation below assumes that the board might not have a solution.
 
-                        var solvedBoard = new Solver().SolveBoard(board);
+                        var solvedBoard = new Solver().SolveBoard(board, new Stack<int[]>());
                         if (solvedBoard != null)
                         {   // Board was solved successfully even with two digits swapped
                             stateIndex1.Add(index1);
