@@ -1037,26 +1037,31 @@ namespace SudokuKata
                         continue;
                     }
 
-                    int row = i / 9;
-                    int col = i % 9;
-                    int blockRow = row / 3;
-                    int blockCol = col / 3;
-
-                    int colidingNumbers = 0;
-                    for (int j = 0; j < 9; j++)
-                    {
-                        int rowSiblingIndex = 9 * row + j;
-                        int colSiblingIndex = 9 * j + col;
-                        int blockSiblingIndex = 9 * (blockRow * 3 + j / 3) + blockCol * 3 + j % 3;
-
-                        int rowSiblingMask = 1 << (state[rowSiblingIndex] - 1);
-                        int colSiblingMask = 1 << (state[colSiblingIndex] - 1);
-                        int blockSiblingMask = 1 << (state[blockSiblingIndex] - 1);
-
-                        colidingNumbers = colidingNumbers | rowSiblingMask | colSiblingMask | blockSiblingMask;
-                    }
-
+                    int colidingNumbers = CalculateColidingNumbers(state, i);
                     result[i] = allOnes & ~colidingNumbers;
+                }
+
+                return result;
+            }
+
+            static int CalculateColidingNumbers(int[] state, int i)
+            {
+                int row = i / 9;
+                int col = i % 9;
+                int blockRow = row / 3;
+                int blockCol = col / 3;
+                int result = 0;
+                for (int j = 0; j < 9; j++)
+                {
+                    int rowSiblingIndex = 9 * row + j;
+                    int colSiblingIndex = 9 * j + col;
+                    int blockSiblingIndex = 9 * (blockRow * 3 + j / 3) + blockCol * 3 + j % 3;
+
+                    int rowSiblingMask = 1 << (state[rowSiblingIndex] - 1);
+                    int colSiblingMask = 1 << (state[colSiblingIndex] - 1);
+                    int blockSiblingMask = 1 << (state[blockSiblingIndex] - 1);
+
+                    result = result | rowSiblingMask | colSiblingMask | blockSiblingMask;
                 }
 
                 return result;
