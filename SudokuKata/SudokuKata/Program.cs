@@ -454,10 +454,7 @@ namespace SudokuKata
         {
             var result = new List<SolutionStep>();
             var maskToOnesCount = GetMaskToOnesCount();
-
-            Dictionary<int, int> singleBitToIndex = new Dictionary<int, int>();
-            for (int i = 0; i < 9; i++)
-                singleBitToIndex[1 << i] = i;
+            var singleBitToIndex = GetSingleBitToIndex();
 
             int allOnes = (1 << 9) - 1;
 
@@ -1046,6 +1043,14 @@ namespace SudokuKata
                     result[i] = result[smaller] + increment;
                 }
 
+                return result;
+            }
+
+            static Dictionary<int, int> GetSingleBitToIndex()
+            {
+                var result = new Dictionary<int, int>();
+                for (int i = 0; i < 9; i++)
+                    result[1 << i] = i;
                 return result;
             }
         }
