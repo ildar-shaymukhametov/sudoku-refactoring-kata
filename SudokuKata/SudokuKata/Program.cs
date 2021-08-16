@@ -453,15 +453,7 @@ namespace SudokuKata
         private SolutionStep[] CalculateSteps(Board board, int[] state, int[] finalState)
         {
             var result = new List<SolutionStep>();
-
-            Dictionary<int, int> maskToOnesCount = new Dictionary<int, int>();
-            maskToOnesCount[0] = 0;
-            for (int i = 1; i < (1 << 9); i++)
-            {
-                int smaller = i >> 1;
-                int increment = i & 1;
-                maskToOnesCount[i] = maskToOnesCount[smaller] + increment;
-            }
+            var maskToOnesCount = GetMaskToOnesCount();
 
             Dictionary<int, int> singleBitToIndex = new Dictionary<int, int>();
             for (int i = 0; i < 9; i++)
@@ -1042,6 +1034,20 @@ namespace SudokuKata
             }
 
             return result.ToArray();
+
+            static Dictionary<int, int> GetMaskToOnesCount()
+            {
+                var result = new Dictionary<int, int>();
+                result[0] = 0;
+                for (int i = 1; i < (1 << 9); i++)
+                {
+                    int smaller = i >> 1;
+                    int increment = i & 1;
+                    result[i] = result[smaller] + increment;
+                }
+
+                return result;
+            }
         }
     }
 }
