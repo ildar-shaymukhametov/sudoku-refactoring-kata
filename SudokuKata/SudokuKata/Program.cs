@@ -10,7 +10,7 @@ namespace SudokuKata
         public static string Play(out string finalBoard)
         {
             var solver = new Solver();
-            var result = solver.Solve();
+            var result = solver.Solve(new Board());
             if (result == null)
             {
                 finalBoard = null;
@@ -388,9 +388,9 @@ namespace SudokuKata
             this.stateStack = new Stack<int[]>();
         }
 
-        public SolveResult? Solve()
+        public SolveResult? Solve(Board board)
         {
-            var finalBoard = Solve(new Board());
+            var finalBoard = SolveBoard(board.Clone());
             if (finalBoard == null)
             {
                 return null;
@@ -407,7 +407,7 @@ namespace SudokuKata
             };
         }
 
-        private Board? Solve(Board board)
+        private Board? SolveBoard(Board board)
         {
             var initialState = new ExpandState(board, rng, stateStack, new Stack<int>(), new Stack<int>(), new Stack<bool[]>(), new Stack<int>());
             var stateContext = new StateContext(initialState);
@@ -992,7 +992,7 @@ namespace SudokuKata
 
                         // Implementation below assumes that the board might not have a solution.
 
-                        var solvedBoard = new Solver().Solve(board);
+                        var solvedBoard = new Solver().SolveBoard(board);
                         if (solvedBoard != null)
                         {   // Board was solved successfully even with two digits swapped
                             stateIndex1.Add(index1);
