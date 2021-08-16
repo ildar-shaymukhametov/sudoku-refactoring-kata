@@ -476,16 +476,7 @@ namespace SudokuKata
 
                     #region Pick cells with only one candidate left
 
-                    int[] singleCandidateIndices =
-                        candidateMasks
-                            .Select((mask, index) => new
-                            {
-                                CandidatesCount = maskToOnesCount[mask],
-                                Index = index
-                            })
-                            .Where(tuple => tuple.CandidatesCount == 1)
-                            .Select(tuple => tuple.Index)
-                            .ToArray();
+                    int[] singleCandidateIndices = GetSingleCandidateIndices(maskToOnesCount, candidateMasks);
 
                     if (singleCandidateIndices.Length > 0)
                     {
@@ -1072,6 +1063,19 @@ namespace SudokuKata
                 var columnIndices = GetColumnsIndices(state);
                 var blockIndices = GetBlockIndices(state);
                 var result = rowsIndices.Concat(columnIndices).Concat(blockIndices).ToList();
+                return result;
+            }
+
+            static int[] GetSingleCandidateIndices(Dictionary<int, int> maskToOnesCount, int[] candidateMasks)
+            {
+                var result = candidateMasks.Select((mask, index) => new
+                {
+                    CandidatesCount = maskToOnesCount[mask],
+                    Index = index
+                })
+                .Where(tuple => tuple.CandidatesCount == 1)
+                .Select(tuple => tuple.Index)
+                .ToArray();
                 return result;
             }
         }
