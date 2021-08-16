@@ -22,9 +22,14 @@ namespace SudokuKata
             PrintBoard("Final look of the solved board:", result.FinalBoard);
             PrintBoard("Starting look of the board to solve:", result.InitialBoard);
             PrintSeparator();
+            PrintSteps(result.Steps);
 
-            #region Print the board as it looks after one change was made to it
-            foreach (var item in result.Steps)
+            return result.FinalBoard.ToString();
+        }
+
+        private static void PrintSteps(SolutionStep[] steps)
+        {
+            foreach (var item in steps)
             {
                 foreach (var descr in item.Descriptions)
                 {
@@ -42,9 +47,6 @@ namespace SudokuKata
                 Console.WriteLine("Code: {0}", code);
                 Console.WriteLine();
             }
-            #endregion
-
-            return result.FinalBoard.ToString();
         }
 
         private static void PrintSeparator()
