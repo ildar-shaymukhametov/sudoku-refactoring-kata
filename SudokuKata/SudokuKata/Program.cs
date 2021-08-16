@@ -9,8 +9,7 @@ namespace SudokuKata
     {
         public static string Play(out string finalBoard)
         {
-            var solver = new Solver();
-            var result = solver.Solve(new Board());
+            var result = new Solver().Solve(new Board());
             if (result == null)
             {
                 finalBoard = null;
